@@ -11,3 +11,6 @@ BernoulliRandom.R
 
 cointossesheads.r
 
+Added Mar. 6, 2019:
+
+SummaryStats.R
