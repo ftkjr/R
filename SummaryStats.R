@@ -19,8 +19,13 @@ SummaryStats = function(observations, treatments){
   levy <- levene.test(observations, treatments) 
   # Checking for Homogeniety of Variance
   
-   anov <- summary(aov(observations~treatments)) 
+  anov <- aov(observations~treatments)
+  AnovaTable <- summary(anov)
   # Checking to see if the means are the same
+  
+  tuke <- TukeyHSD(anov)
+  # "Tukey multiple comparisons of means" - R  
+  
   
    print(numsum)
    print("IQR:")
@@ -34,6 +39,8 @@ SummaryStats = function(observations, treatments){
    print("Levene Test:")
    print(levy)
    print("ANOVA")
-   print(anov)
+   print(AnovaTable)
+   print("Tukey")
+   print(tuke)
 
 }
