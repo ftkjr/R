@@ -3,24 +3,38 @@
 # 2019-03-04
 
 SummaryStats = function(observations, treatments){
+  # Add requisite libraries
+  library(lawstat)
+  library(MASS)
   
-  numsum <- tapply(observations, treatments, summary) 
+  # Make sure observations is numeric
+  observations <- as.numeric(observations)
+  
+  #Make sure treatments is characters
+  treatments <- as.character(treatments)
+  
   # 5 Number Summary
-  
-  iqr <- tapply(observations, treatments, IQR) 
+  numsum <- tapply(observations, treatments, summary) 
+ 
   # Inter Quartile Range
+  iqr <- tapply(observations, treatments, IQR) 
   
-  variance <- tapply(observations, treatments, var) 
   # Variance
+  variance <- tapply(observations, treatments, var) 
   
-  standdev <- tapply(observations, treatments, sd) 
   # Standard Deviation
+  standdev <- tapply(observations, treatments, sd) 
   
+  # Checking for Homogeniety of Variance with Levene Test
   levy <- levene.test(observations, treatments) 
-  # Checking for Homogeniety of Variance
   
-   anov <- summary(aov(observations~treatments)) 
   # Checking to see if the means are the same
+  anov <- aov(observations~treatments)
+  AnovaTable <- summary(anov)
+  
+  # TukeyHSD
+  tuke <- TukeyHSD(anov)
+
   
    print(numsum)
    print("IQR:")
@@ -34,6 +48,9 @@ SummaryStats = function(observations, treatments){
    print("Levene Test:")
    print(levy)
    print("ANOVA")
-   print(anov)
+   print(AnovaTable)
+   print("TukeyHSD:")
+   print(tuke)
+   plot(tuke)
 
 }
