@@ -10,7 +10,7 @@ SummaryStats = function(observations, treatments){
   # Make sure observations is numeric
   observations <- as.numeric(observations)
   
-  #Make sure treatments is characters
+  # Make sure treatments is characters
   treatments <- as.character(treatments)
   
   # 5 Number Summary
