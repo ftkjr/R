@@ -8,11 +8,11 @@ DistMod <- function(observation){
   observation <- as.numeric(observation)
   
   # Original data
-  obsiqr <- IQR(observation) #see below
-  obssd <- sd(observation)
-  obscalc <- obsiqr/obssd
-  obsrow <- c("Original:", obscalc)
-  hist(observation) 
+  obsiqr <- IQR(observation) # Inter Quartile Range
+  obssd <- sd(observation) # Standard Deviation
+  obscalc <- obsiqr/obssd # IQR/SD
+  obsrow <- c("Original:", obscalc) # labeled and stored
+  hist(observation) # Histogram
   
   # Square root of the observations
   squirt <- sqrt(observation) # Take Square Root
@@ -28,7 +28,7 @@ DistMod <- function(observation){
   lagsd <- sd(lagdat) # Standard Deviation
   lagcalc <- lagiqr/lagsd # IQR/SD
   lagrow <-  c("Log:", lagcalc) # labeled and stored
-  hist(lagdat)
+  hist(lagdat) # Histogram
   
   # Determining which version is most normal
   if (abs(1.34-obscalc)<abs(1.34-sqcalc) & abs(1.34-obscalc)<abs(1.34-lagcalc)){
