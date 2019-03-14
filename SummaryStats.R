@@ -1,4 +1,4 @@
-# SummaryStats(Observations, treatments)
+# SummaryStats(Observations, treatments, confidenceInterval)
 # Fred Kaesmann Jr Date: 2019-03-04
 
 SummaryStats <- function(observations, treatments, confidenceInterval){
@@ -11,11 +11,10 @@ SummaryStats <- function(observations, treatments, confidenceInterval){
   #   treatments: Different indexes of observations.
   #   confidenceInterval: Measure of accuracy of statistics tests, 
   #                          if no arg present, assumes .05 (95%).
+  #                             (optional input)
   #
   # Returns:
   #   A series of summary statistics. (Designed for MAT 342 Project 2)
-  
-  
   
   # Add requisite libraries
   library(lawstat)
@@ -23,92 +22,173 @@ SummaryStats <- function(observations, treatments, confidenceInterval){
   
   # Condfidence interval check
   if (missing(confidenceInterval)){
-    # If no confidence interval specified, assume .05 (95%)
-    ConfidenceInterval = .05 
-  } else if (confidenceInterval > 1 & confidenceInterval < 100) {
+    confidenceInterval <- .05 
+    cat(sprintf("Alpha = %s\n", confidenceInterval))
+    cat("\n", "-------------------------------------------------------------------")
+  } else if (confidenceInterval > 1 & confidenceInterval < 100){
     # (if they input something like 95 instead of .05)
-    confidenceInterval <- 1 - (confidenceInterval/100) 
+    confidenceInterval <- 1 - (confidenceInterval/100)
+    cat(sprintf("Alpha = %s\n", confidenceInterval))
+    cat("\n", "-------------------------------------------------------------------")
   } else if (confidenceInterval >= 100){ # Erroneous Confidence Interval
+    stop("Confidence Interval Error")
+  } else if (confidenceInterval <= 0) {
     stop("Confidence Interval Error")
   }
   
   # Make sure observations is numeric
   observations <- as.numeric(observations)
   
+  # For a single set of observations
+  if (missing(treatments) || nlevels(as.factor(treatments)) == 1){
+    numsum <- summary(observations)
+    print(numsum)
+    cat("\n", "-------------------------------------------------------------------")
+    
+    cat("\n", "Inter Quartile Range:")
+    iqr <- IQR(observations)
+    print(iqr)
+    cat("\n", "-------------------------------------------------------------------")
+    
+    cat("\n", "Variance:")
+    variance <- var(observations)
+    print(variance)
+    cat("\n", "-------------------------------------------------------------------")
+    
+    cat("\n", "Standard Deviation:")
+    standdev <- sd(observations)
+    print(standdev)
+    cat("\n", "-------------------------------------------------------------------")
+    
+    cat("\n", "IQR/SD:")
+    print(iqr/standdev)
+    cat("\n", "-------------------------------------------------------------------")
+    
+    # Single Variable t.test
+    ttest <- t.test(observations)
+    pvalTtest <- ttest$p.value
+    print(ttest)
+    
+    # Null Hypothesis test
+    if (pvalTtest < confidenceInterval) {
+      cat("\n", sprintf("t-test pval (%f) < (%s) confidence interval", pvalTtest, confidenceInterval))
+      cat("\n", "REJECT Null Hypothesis")
+    } else if (pvalTtest > confidenceInterval) {
+      cat("\n", sprintf("t-test pval (%f) > (%s) confidence interval",pvalTtest, confidenceInterval))
+      cat("\n", "CANNOT REJECT Null Hypothesis")
+    }
+    
+    # Plot your dataset hist -> wait -> boxplot
+    hist(observations, main = "For Internal Use Only")
+    par(ask=TRUE) 
+    boxplot(observations, main = "For Internal Use Only", horizontal = TRUE)
+    
+  } else {
+  
   # Make sure treatments is characters
   treatments <- as.factor(treatments)
   
   # 5 Number Summary
   numsum <- tapply(observations, treatments, summary) 
+  print("5 Number Summary")
+  print(numsum)
+  print("-------------------------------------------------------------------")
  
   # Inter Quartile Range
-  iqr <- tapply(observations, treatments, IQR) 
+  iqr <- tapply(observations, treatments, IQR)
+  print("Inter Quartile Range:")
+  print(iqr)
+  print("-------------------------------------------------------------------")
   
   # Variance
-  variance <- tapply(observations, treatments, var) 
+  variance <- tapply(observations, treatments, var)
+  print("Variance:")
+  print(variance)
+  print("-------------------------------------------------------------------")
   
   # Standard Deviation
-  standdev <- tapply(observations, treatments, sd) 
+  standdev <- tapply(observations, treatments, sd)
+  print("Standard Deviation:")
+  print(standdev)
+  print("-------------------------------------------------------------------")
+  
+  # Check normal
+  print("IQR/SD:")
+  print(iqr/standdev)
+  print("-------------------------------------------------------------------")
+
+  # Boxplot to see everything 
+  boxplot(observations ~ treatments, main = "For Internal Use Only")
+  
+  # If there's only two treatments
+  if (nlevels(treatments)== 2){
+    welch <- t.test(observations~treatments)
+    pvalWelch <- welch$p.value
+    print(welch)
+    
+    # Null Hypothesis check
+    if (pvalWelch > confidenceInterval){
+      cat(sprintf("p-value (%s) > (%s) confidence interval", 
+                  pvalWelch, confidenceInterval))
+      cat("\n", "CANNOT REJECT null hypothesis")
+    } else if (pval < confidenceInterval){
+      cat(sprintf("p-value (%s) < (%s) confidence interval", 
+                  pvalWelch, confidenceInterval))
+      cat("\n","REJECT null hypothesis")
+    }
+    
+  } else {
   
   # Checking for Homogeniety of Variance with Levene Test
   levy <- levene.test(observations, treatments) 
+  pvalLevy <- levy$p.value
+  print("Levene Test:")
+  print(levy)
   
-  # Checking to see if the means are the same
-  anov <- aov(observations ~ treatments)
-  AnovaTable <- anova(anov)
-  
-  # Boxcox
-  # boxcox(lm(observations~treatments))
-  # Why wont this work goddammit!!
-  
-  # TukeyHSD
-  tuke <- TukeyHSD(anov)
-  
-  
-
-   print("5 Number Summary")
-   print(numsum)
-   print("-------------------------------------------------------------------")
-   print("Inter Quartile Range:")
-   print(iqr)
-   print("-------------------------------------------------------------------")
-   print("Variance:")
-   print(variance)
-   print("-------------------------------------------------------------------")
-   print("Standard Deviation:")
-   print(standdev)
-   print("-------------------------------------------------------------------")
-   print("IQR/SD:")
-   print(iqr/standdev)
-   print("-------------------------------------------------------------------")
-   
-   
-   boxplot(observations ~ treatments, main="For Internal Use Only")
-   
-   # Levene Test
-   print("Levene Test:")
-   print(levy)
-   print("-------------------------------------------------------------------")
-   
-   # If Levene test p value is less than confidence interval,
-   # then assumptions from anova not met and therefor inapplicaple
-   if (levy$p.value < confidenceInterval){
-    print("Variances significantly different across treatments")  
+  # If Levene test p value is less than confidence interval,
+  # then assumptions from anova not met and therefor inapplicaple
+  if (levy$p.value < confidenceInterval){
+    cat(sprintf("Levene Test p-value (%f) < (%s) confidence interval", 
+                pvalLevy, confidenceInterval))
+    print("REJECT null hypothesis of homoscedasticity of variance")
+    print("Variances significantly different across treatments") 
     print("therefore assumptions for ANOVA not met")
-   } else {
-   print("ANOVA")
-   print(AnovaTable)
-   print("-------------------------------------------------------------------")
-   
-   # If ANOVA p value is less than confidence interval,
-   # run Tukey table to see which means are different
-   if (AnovaTable$`Pr(>F)`[1] < confidenceInterval){
-    print("There is at least one set of sample means.")
-    print("TukeyHSD:")
-    print(tuke)
-    plot(tuke)
-   } else {
-      print("Means are not significantly different")
+    cat("\n", "-------------------------------------------------------------------")
+    
+  } else { # Assuming levene test doesnt disqualify our data, we proceed to ANOVA
+    cat(sprintf("Levene Test p-value (%f) > (%s) confidence interval", 
+                pvalLevy, confidenceInterval))
+    cat("\n", "CANNOT REJECT null hypothesis of homoscedasticity of variance")
+    cat("\n", "-------------------------------------------------------------------")
+    
+    # Checking to see if means across treatments are the same
+    anov <- aov(observations ~ treatments)
+    AnovaTable <- anova(anov)
+    pvalAnova <- AnovaTable$`Pr(>F)`[1]
+    cat("\n", "ANOVA")
+    print(AnovaTable)
+    
+    # If ANOVA p value is less than confidence interval,
+    if (pvalAnova < confidenceInterval){
+      cat(sprintf("ANOVA p-value (%f) < (%s) confidence interval", 
+                  pvalAnova, confidenceInterval))
+      cat("\n", "REJECT null hypothesis") 
+      cat("\n", "There is at least one set of different sample means")
+      cat("\n", "-------------------------------------------------------------------")
+      
+      # run Tukey table to see which means are different
+      tuke <- TukeyHSD(anov)
+      cat("\n", "TukeyHSD:")
+      print(tuke)
+      par(ask=TRUE)
+      plot(tuke)
+    } else {
+      cat(sprintf("ANOVA p-value (%f) > (%s) confidence interval", 
+                  pvalAnova, confidenceInterval))
+      print("CANNOT REJECT null hypothesis")
+      print("Means are not significantly different across treatments")
     }
+   }
   }
-}
+ }
+  }
