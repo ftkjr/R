@@ -4,7 +4,7 @@
 \title{Check Normality of set(s) of observations
 %%  ~~function to do ... ~~
 }
-\description{Checks normaility of a set of data which may or may not be broken out by treatments. Provides IQR, SD, and IQR/SD.
+\description{Checks normaility of a set of data which may or may not be broken out by treatments.
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
@@ -30,7 +30,7 @@ CheckNormality(observation, treatment)
 %% ...
 Also returns Histogram for single factor sets, and boxplots regardless of number of factors.
 }
-\references{My github -> https://github.com/ftkjr/R
+\references{My github -> https://github.com/ftkjr/SummaryPack
 %% ~put references to the literature/web site here ~
 }
 \author{Frederick Kaesmann Jr

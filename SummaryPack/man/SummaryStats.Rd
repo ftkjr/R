@@ -40,7 +40,7 @@ SummaryStats(observations, treatments, confidenceInterval)
 %%  \item{comp2 }{Description of 'comp2'}
 %% ...
 }
-\references{My github -> https://github.com/ftkjr/R
+\references{My github -> https://github.com/ftkjr/SummaryPack
 %% ~put references to the literature/web site here ~
 }
 \author{Frederick Kaesmann Jr.
